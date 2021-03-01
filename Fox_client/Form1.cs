@@ -41,9 +41,12 @@ namespace Fox_client
         {
             BinaryFormatter bf = new BinaryFormatter();
 
-            MemoryStream ms = new MemoryStream(buff);
-
-            return (Info)bf.Deserialize(ms);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.Write(buff, 0, buff.Length);
+                ms.Position = 0;
+                return (Info)bf.Deserialize(ms);
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -67,6 +70,9 @@ namespace Fox_client
 
         }
 
+        /// <summary>
+        /// Чтение из файла.
+        /// </summary>
         private void ReadFromFile()
         {
             string path = Path.GetDirectoryName(Application.ExecutablePath) + "/Foregin.key";
@@ -79,38 +85,35 @@ namespace Fox_client
                 }
         }
 
+        /// <summary>
+        /// Установка изображения.
+        /// </summary>
+        /// <param name="image"></param>
         private void SetImage(Image image)
         {
             PbxMain.Image = image;
         }
 
+        /// <summary>
+        /// Получения сообщения.
+        /// </summary>
         private void GetMessage()
         {
             NetworkStream stream = null;
             try
             {
-               
                 stream = client.GetStream();
+
                 while (true)
                 {
 
-                    byte[] byff = new byte[20000000];
 
-                    try
-                    {
-                        stream.Read(byff, 0, byff.Length);
-                    }
-                    catch (Exception e)
-                    {
-                        //MessageBox.Show(e.ToString());
-                        continue;
-                    }
+                    Info inf = new Info();
 
-
-
-                    Info inf;
-                    inf = ByteToInfo(byff);
-
+                    BinaryFormatter bf = new BinaryFormatter();
+                    //inf = ByteToInfo(byff);
+                    inf = (Info)bf.Deserialize(stream);
+                    bf = null;
 
                     if (inf.Command == "Start")
                     {
@@ -132,11 +135,13 @@ namespace Fox_client
                         }
 
                     }
+
+                    inf = null;
                 }
             }
-            catch
+            catch (Exception e)
             {
-
+               // MessageBox.Show(e.ToString());
             }
             finally
             {
@@ -145,26 +150,38 @@ namespace Fox_client
 
         }
 
+        /// <summary>
+        /// Закрытие формы.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             client?.Close();
             th1?.Abort();
             th2?.Abort();
+            e.Cancel = true;
         }
 
+        /// <summary>
+        /// Скрытие формы.
+        /// </summary>
         private void HideForm()
         {
             Invoke(new MethodInvoker(delegate
             {
-                //this.Hide();
                 this.WindowState = FormWindowState.Minimized;
+                this.Hide();
                 this.ShowInTaskbar = false;
 
             }));
-      
-           
+
+
         }
 
+        /// <summary>
+        /// Показ формы
+        /// </summary>
         private void ShowForm()
         {
             Invoke(new MethodInvoker(delegate
@@ -176,6 +193,9 @@ namespace Fox_client
             }));
         }
 
+        /// <summary>
+        /// Соединение с сервером
+        /// </summary>
         private void Connect()
         {
             while (true)

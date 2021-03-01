@@ -36,7 +36,8 @@
     <ApplicationIcon>pngwing.com.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DLl_Profile">
+    <Reference Include="DLl_Profile, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLl_Profile\DLl_Profile\bin\Debug\DLl_Profile.dll</HintPath>
     </Reference>
     <Reference Include="System" />
